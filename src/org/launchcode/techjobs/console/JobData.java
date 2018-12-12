@@ -1,5 +1,6 @@
 package org.launchcode.techjobs.console;
 
+import com.sun.xml.internal.ws.api.ha.StickyFeature;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -10,6 +11,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.lang.*;
+import java.util.Map;
 
 /**
  * Created by LaunchCode
@@ -36,7 +39,7 @@ public class JobData {
         ArrayList<String> values = new ArrayList<>();
 
         for (HashMap<String, String> row : allJobs) {
-            String aValue = row.get(field);
+            String aValue = row.get(field.toLowerCase());
 
             if (!values.contains(aValue)) {
                 values.add(aValue);
@@ -76,7 +79,7 @@ public class JobData {
 
             String aValue = row.get(column);
 
-            if (aValue.contains(value)) {
+            if (aValue.toLowerCase().contains(value.toLowerCase())) {
                 jobs.add(row);
             }
         }
@@ -84,45 +87,76 @@ public class JobData {
         return jobs;
     }
 
-    /**
-     * Read in data from a CSV file and store it in a list
-     */
-    private static void loadData() {
+    public static ArrayList<HashMap<String, String>> findByValue(String value) {
 
-        // Only load data once
-        if (isDataLoaded) {
-            return;
-        }
+        loadData();
+        ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
 
-        try {
 
-            // Open the CSV file and set up pull out column header info and records
-            Reader in = new FileReader(DATA_FILE);
-            CSVParser parser = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
-            List<CSVRecord> records = parser.getRecords();
-            Integer numberOfColumns = records.get(0).size();
-            String[] headers = parser.getHeaderMap().keySet().toArray(new String[numberOfColumns]);
+        for (int i = 0; allJobs.size() > i; i++) {
+            HashMap<String,String> rows = allJobs.get(i);
+            for (Map.Entry<String, String> row : rows.entrySet()) {
 
-            allJobs = new ArrayList<>();
+                String aValue = row.getValue();
 
-            // Put the records into a more friendly format
-            for (CSVRecord record : records) {
-                HashMap<String, String> newJob = new HashMap<>();
+                if (aValue.toLowerCase().contains(value.toLowerCase())) {
 
-                for (String headerLabel : headers) {
-                    newJob.put(headerLabel, record.get(headerLabel));
+                    if (!jobs.contains(rows)) {
+
+                        jobs.add(rows);
+
+                    }
+
                 }
 
-                allJobs.add(newJob);
             }
 
-            // flag the data as loaded, so we don't do it twice
-            isDataLoaded = true;
-
-        } catch (IOException e) {
-            System.out.println("Failed to load job data");
-            e.printStackTrace();
         }
+
+        return jobs;
+
     }
 
-}
+        /**
+         * Read in data from a CSV file and store it in a list
+         */
+        private static void loadData() {
+
+            // Only load data once
+            if (isDataLoaded) {
+                return;
+            }
+
+            try {
+
+                // Open the CSV file and set up pull out column header info and records
+                Reader in = new FileReader(DATA_FILE);
+                CSVParser parser = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+                List<CSVRecord> records = parser.getRecords();
+                Integer numberOfColumns = records.get(0).size();
+                String[] headers = parser.getHeaderMap().keySet().toArray(new String[numberOfColumns]);
+
+                allJobs = new ArrayList<>();
+
+                // Put the records into a more friendly format
+                for (CSVRecord record : records) {
+                    HashMap<String, String> newJob = new HashMap<>();
+
+                    for (String headerLabel : headers) {
+                        newJob.put(headerLabel, record.get(headerLabel));
+                    }
+
+                    allJobs.add(newJob);
+                }
+
+                // flag the data as loaded, so we don't do it twice
+                isDataLoaded = true;
+
+            } catch (IOException e) {
+                System.out.println("Failed to load job data");
+                e.printStackTrace();
+            }
+        }
+
+    }
+
