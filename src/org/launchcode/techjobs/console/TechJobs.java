@@ -123,5 +123,6 @@ public class TechJobs {
         } else{
             System.out.println("No search results found");
         }
+        
     }
 }
